@@ -1,0 +1,118 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arena dos Heróis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      color: #f3e8ff;
+    }
+    .nav-link {
+      transition: color 0.3s;
+    }
+    .nav-link:hover {
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body class="p-6">
+  <nav class="bg-white bg-opacity-10 p-4 rounded-lg mb-6">
+    <ul class="flex justify-center space-x-6">
+      <li><a href="index.html" class="nav-link text-lg font-semibold">Home</a></li>
+      <li><a href="brackets.html" class="nav-link text-lg font-semibold">Chaveamentos</a></li>
+      <li><a href="leaderboard.html" class="nav-link text-lg font-semibold">Placar</a></li>
+      <li><a href="history.html" class="nav-link text-lg font-semibold">História</a></li>
+      <li><a href="location.html" class="nav-link text-lg font-semibold">Localização</a></li>
+      <li><a href="catalog.html" class="nav-link text-lg font-semibold">Catálogo</a></li>
+    </ul>
+  </nav>
+
+  <div class="container mx-auto max-w-4xl">
+    <!-- Header -->
+    <header class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-pink-600 bg-clip-text text-transparent">
+        Arena dos Heróis
+      </h1>
+      <p class="text-lg">Onde guerreiros e lendas se encontram. Inscreva-se para participar de batalhas épicas, suba no placar e adquira itens poderosos!</p>
+    </header>
+
+    <!-- Registration Form -->
+    <section class="bg-white bg-opacity-10 p-6 rounded-lg">
+      <h2 class="text-2xl font-semibold mb-4 text-yellow-400">Formulário de Inscrição</h2>
+      <form class="space-y-4" id="registrationForm">
+        <div>
+          <label class="block text-purple-300">Nome do Guerreiro</label>
+          <input type="text" class="w-full p-2 bg-transparent border border-purple-500 rounded" placeholder="Seu nome" required>
+        </div>
+        <div>
+          <label class="block text-purple-300">Idade</label>
+          <input type="number" class="w-full p-2 bg-transparent border border-purple-500 rounded" placeholder="Sua idade" required>
+        </div>
+        <div>
+          <label class="block text-purple-300">Escolha Sua Arma</label>
+          <input type="text" class="w-full p-2 bg-transparent border border-purple-500 rounded" placeholder="Sua arma" required>
+        </div>
+        <div>
+          <label class="block text-purple-300">Fale Sobre Sua Jornada</label>
+          <textarea class="w-full p-2 bg-transparent border border-purple-500 rounded" rows="3" placeholder="Conte sua história" required></textarea>
+        </div>
+        <button type="submit" class="w-full bg-yellow-400 text-black py-2 rounded hover:bg-orange-600 transition">
+          Inscreva-se
+        </button>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Inscrição realizada com sucesso! Bem-vindo à Arena dos Heróis.');
+      // Aqui você pode adicionar integração com Firebase para salvar os dados
+    });
+  </script>
+</body>
+</html>
